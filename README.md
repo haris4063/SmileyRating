@@ -101,9 +101,7 @@ You can set change the colors by xml
         app:drawingColor="#353431"
         app:normalColor="#f2dd68"
         app:placeHolderBackgroundColor="#e6e8ed"
-        app:placeHolderSmileColor="#ffffff"
-        app:textNonSelectionColor="#AEB3B5"
-        app:textSelectionColor="#000000" />
+        app:placeHolderSmileColor="#ffffff" />
 ```
 
 | Params  | Description |
@@ -113,18 +111,18 @@ You can set change the colors by xml
 | `app:drawingColor`  | To change the color of all smileys (Smile and eyes).  |
 | `app:placeHolderSmileColor`  | To set the color of all placeholder smiley's (Smile and eyes) color.  |
 | `app:placeHolderBackgroundColor`  | To set the color of all placeholder smiley's background color.  |
-| `app:textSelectionColor`  | To set the color of the selected smiley's text color.  |
-| `app:textNonSelectionColor`  | To set the color of the non-selected smiley's text color  |
 
-Or, you can change colors on runtime also
+Or, you can change colors or typeface on runtime also
 ```java
 smileyRating.setAngryColor(int color);
 smileRating.setNormalColor(int color);
 smileRating.setDrawingColor(int color);
 smileRating.setPlaceHolderSmileColor(int color);
 smileRating.setPlaceHolderBackgroundColor(int color);
-smileRating.setTextSelectionColor(int color);
-smileRating.setTextNonSelectionColor(int color);
+smileRating.setActiveFontColor(int color);
+smileRating.setDefaultFontColor(int color);
+smileRating.setTypeface(Typeface typeface);
+smileRating.setAntiAlias(boolean antiAlias);
 ```
 
 All colors should have be provided as color int.
