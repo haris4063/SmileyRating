@@ -4,6 +4,7 @@ import android.animation.Animator;
 import android.animation.ArgbEvaluator;
 import android.animation.FloatEvaluator;
 import android.animation.ValueAnimator;
+import android.app.Activity;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
@@ -13,11 +14,12 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.RectF;
 import android.graphics.Typeface;
-import android.support.annotation.ColorInt;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.animation.AccelerateDecelerateInterpolator;
+
+import com.hsalf.smilerating.BaseRating;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -25,17 +27,16 @@ import java.util.Map;
 /**
  * Created by sujith on 11/10/16.
  */
-public class SmileRating extends BaseRating {
-
+public class CustomSmileRating extends BaseRating {
     private static final String TAG = "RatingView";
 
     private int mPlaceHolderSmileColor = Color.WHITE;
     private int mAngryColor = Color.parseColor("#f29a68");
     private int mNormalColor = Color.parseColor("#f2dd68");
     private int mDrawingColor = Color.parseColor("#353431");
-    private int mTextSelectedColor = Color.BLACK;
-    private int mTextNonSelectedColor = Color.parseColor("#AEB3B5");
     private int mPlaceholderBackgroundColor = Color.parseColor("#e6e8ed");
+    private int activeFontColor = Color.BLACK;
+    private  int defaultFontColor = Color.WHITE;
 
     private String[] mNames = new String[]{
             "Terrible", "Bad", "Okay", "Good", "Great"
@@ -87,22 +88,20 @@ public class SmileRating extends BaseRating {
     private OnRatingSelectedListener mOnRatingSelectedListener = null;
     private OnSmileySelectionListener mOnSmileySelectionListener = null;
     private float mPlaceHolderScale = 1f;
-
-    public SmileRating(Context context) {
+    private Typeface typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD);
+    public CustomSmileRating(Context context) {
         super(context);
-        init();
+
     }
 
-    public SmileRating(Context context, AttributeSet attrs) {
+    public CustomSmileRating(Context context, AttributeSet attrs) {
         super(context, attrs);
         parseAttrs(attrs);
-        init();
     }
 
-    public SmileRating(Context context, AttributeSet attrs, int defStyleAttr) {
+    public CustomSmileRating(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         parseAttrs(attrs);
-        init();
     }
 
     private void parseAttrs(AttributeSet attrs) {
@@ -115,18 +114,22 @@ public class SmileRating extends BaseRating {
                     mPlaceHolderSmileColor);
             mPlaceholderBackgroundColor = a.getColor(R.styleable.SmileRating_placeHolderBackgroundColor,
                     mPlaceholderBackgroundColor);
-            mTextSelectedColor = a.getColor(R.styleable.SmileRating_textSelectionColor,
-                    mTextSelectedColor);
-            mTextNonSelectedColor = a.getColor(R.styleable.SmileRating_textNonSelectionColor,
-                    mTextNonSelectedColor);
             a.recycle();
         }
     }
 
+    @Override
+    protected void onFinishInflate() {
+        super.onFinishInflate();
+        init();
+    }
 
     private void init() {
         mClickAnalyser = ClickAnalyser.newInstance(getResources().getDisplayMetrics().density);
-        mTextPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
+
+        mTextPaint.setColor(activeFontColor);
+        mTextPaint.setTypeface(typeface);
+        mTextPaint.setFlags(Paint.ANTI_ALIAS_FLAG);
 
         mPathPaint.setAntiAlias(true);
         mPathPaint.setStrokeWidth(3);
@@ -140,16 +143,19 @@ public class SmileRating extends BaseRating {
         mPointPaint2.setStyle(Paint.Style.STROKE);
 
         mBackgroundPaint.setStyle(Paint.Style.FILL);
+        mBackgroundPaint.setFlags(Paint.ANTI_ALIAS_FLAG);
 
         mPlaceHolderFacePaint.setColor(mPlaceHolderSmileColor);
         mPlaceHolderFacePaint.setStyle(Paint.Style.FILL);
+        mPlaceHolderFacePaint.setFlags(Paint.ANTI_ALIAS_FLAG);
 
         mPlaceHolderCirclePaint.setColor(mPlaceholderBackgroundColor);
         mPlaceHolderCirclePaint.setStyle(Paint.Style.FILL);
+        mPlaceHolderCirclePaint.setFlags(Paint.ANTI_ALIAS_FLAG);
 
         mPlaceholderLinePaint.setColor(mPlaceholderBackgroundColor);
         mPlaceholderLinePaint.setStyle(Paint.Style.STROKE);
-
+        mPlaceholderLinePaint.setFlags(Paint.ANTI_ALIAS_FLAG);
         mValueAnimator.setDuration(250);
         mValueAnimator.addListener(mAnimatorListener);
         mValueAnimator.addUpdateListener(mAnimatorUpdateListener);
@@ -256,7 +262,6 @@ public class SmileRating extends BaseRating {
         Point start = mFaces[0].place;
         Point end = mFaces[mFaces.length - 1].place;
         canvas.drawLine(start.x, start.y, end.x, end.y, mPlaceholderLinePaint);
-        Log.i(TAG, "******************");
         for (Face face : mFaces) {
             if (!mSmilePath.isEmpty()) {
                 float scale = getScale(face.smileType);
@@ -270,8 +275,9 @@ public class SmileRating extends BaseRating {
                 mDummyDrawPah.addPath(face.smile, mScaleMatrix);
                 canvas.drawPath(mDummyDrawPah, mPlaceHolderFacePaint);
                 float transY = 0.15f - (scale * 0.15f);
-                mTextPaint.setColor((int) mColorEvaluator.evaluate(((transY / 0.15f) - 0.2f) / 0.8f,
-                        mTextNonSelectedColor, mTextSelectedColor));
+                mTextPaint.setTypeface(typeface);
+                mTextPaint.setColor((int) mColorEvaluator.evaluate((transY / 0.15f),
+                        defaultFontColor, activeFontColor));
                 drawTextCentered(getSmileName(face.smileType), face.place.x,
                         face.place.y + (mHeight * (0.70f + transY)), mTextPaint, canvas);
             }
@@ -308,43 +314,18 @@ public class SmileRating extends BaseRating {
         invalidate();
     }
 
-    public void setAngryColor(@ColorInt int color) {
-        this.mAngryColor = color;
-        getSmiley(mSmileys, getFractionBySmiley(mSelectedSmile), divisions, mFromRange, mToRange,
-                mFaceCenter, mSmilePath, mCenterY);
-    }
-
-    public void setNormalColor(@ColorInt int color) {
-        this.mNormalColor = color;
-        getSmiley(mSmileys, getFractionBySmiley(mSelectedSmile), divisions, mFromRange, mToRange,
-                mFaceCenter, mSmilePath, mCenterY);
-    }
-
-    public void setDrawingColor(@ColorInt int color) {
-        this.mDrawingColor = color;
-        mPathPaint.setColor(mDrawingColor);
+    public void setActiveFontColor(int activeFontColor) {
+        this.activeFontColor = activeFontColor;
         invalidate();
     }
 
-    public void setTextSelectedColor(@ColorInt int color) {
-        this.mTextSelectedColor = color;
+    public void setDefaultFontColor(int defaultFontColor) {
+        this.defaultFontColor = defaultFontColor;
         invalidate();
     }
 
-    public void setTextNonSelectedColor(@ColorInt int color) {
-        this.mTextNonSelectedColor = color;
-        invalidate();
-    }
-
-    public void setPlaceHolderSmileColor(@ColorInt int color) {
-        this.mPlaceHolderSmileColor = color;
-        mPlaceHolderFacePaint.setColor(mPlaceHolderSmileColor);
-        invalidate();
-    }
-
-    public void setPlaceholderBackgroundColor(@ColorInt int color) {
-        this.mPlaceholderBackgroundColor = color;
-        mPlaceHolderCirclePaint.setColor(mPlaceholderBackgroundColor);
+    public void setTypeface(Typeface typeface) {
+        this.typeface = typeface;
         invalidate();
     }
 
@@ -432,7 +413,6 @@ public class SmileRating extends BaseRating {
 
     /**
      * Set the selected smiley
-     *
      * @param smile is he smiley type you want this rating bar to show as selected smile
      */
     public void setSelectedSmile(@Smiley int smile) {
@@ -441,8 +421,7 @@ public class SmileRating extends BaseRating {
 
     /**
      * Set the selected smiley
-     *
-     * @param smile   is he smiley type you want this rating bar to show as selected smile
+     * @param smile is he smiley type you want this rating bar to show as selected smile
      * @param animate true if you want to set the selected smiley and animate it,
      *                false for no animation
      */
@@ -545,23 +524,6 @@ public class SmileRating extends BaseRating {
         private float pxToDp(float px) {
             return px / mDensity;
         }
-    }
-
-    private float getFractionBySmiley(@Smiley int smiley) {
-        switch (smiley) {
-
-            case BaseRating.BAD:
-                return 1f;
-            case BaseRating.GOOD:
-                return 0.75f;
-            case BaseRating.GREAT:
-                return 0.5f;
-            case BaseRating.OKAY:
-                return 0.25f;
-            case BaseRating.TERRIBLE:
-                return 0f;
-        }
-        return 0;
     }
 
     private void getSmiley(Smileys smileys, float fraction, float divisions, float fromRange,
