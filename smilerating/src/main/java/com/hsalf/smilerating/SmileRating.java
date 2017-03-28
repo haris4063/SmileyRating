@@ -85,6 +85,7 @@ public class CustomSmileRating extends BaseRating {
     private float mToRange;
     private float mPrevX;
     private boolean mFaceClickEngaged = false;
+    private boolean mAntiAlias= true;
     private OnRatingSelectedListener mOnRatingSelectedListener = null;
     private OnSmileySelectionListener mOnSmileySelectionListener = null;
     private float mPlaceHolderScale = 1f;
@@ -129,7 +130,7 @@ public class CustomSmileRating extends BaseRating {
 
         mTextPaint.setColor(activeFontColor);
         mTextPaint.setTypeface(typeface);
-        mTextPaint.setFlags(Paint.ANTI_ALIAS_FLAG);
+        mTextPaint.setAntiAlias(mAntiAlias);
 
         mPathPaint.setAntiAlias(true);
         mPathPaint.setStrokeWidth(3);
@@ -143,23 +144,24 @@ public class CustomSmileRating extends BaseRating {
         mPointPaint2.setStyle(Paint.Style.STROKE);
 
         mBackgroundPaint.setStyle(Paint.Style.FILL);
-        mBackgroundPaint.setFlags(Paint.ANTI_ALIAS_FLAG);
+        mBackgroundPaint.setAntiAlias(mAntiAlias);
 
         mPlaceHolderFacePaint.setColor(mPlaceHolderSmileColor);
         mPlaceHolderFacePaint.setStyle(Paint.Style.FILL);
-        mPlaceHolderFacePaint.setFlags(Paint.ANTI_ALIAS_FLAG);
+        mPlaceHolderFacePaint.setAntiAlias(mAntiAlias);
 
         mPlaceHolderCirclePaint.setColor(mPlaceholderBackgroundColor);
         mPlaceHolderCirclePaint.setStyle(Paint.Style.FILL);
-        mPlaceHolderCirclePaint.setFlags(Paint.ANTI_ALIAS_FLAG);
+        mPlaceHolderCirclePaint.setAntiAlias(mAntiAlias);
 
         mPlaceholderLinePaint.setColor(mPlaceholderBackgroundColor);
         mPlaceholderLinePaint.setStyle(Paint.Style.STROKE);
-        mPlaceholderLinePaint.setFlags(Paint.ANTI_ALIAS_FLAG);
+        mPlaceholderLinePaint.setAntiAlias(mAntiAlias);
         mValueAnimator.setDuration(250);
         mValueAnimator.addListener(mAnimatorListener);
         mValueAnimator.addUpdateListener(mAnimatorUpdateListener);
         mValueAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
+
     }
 
     private ValueAnimator.AnimatorUpdateListener mAnimatorUpdateListener
@@ -276,6 +278,7 @@ public class CustomSmileRating extends BaseRating {
                 canvas.drawPath(mDummyDrawPah, mPlaceHolderFacePaint);
                 float transY = 0.15f - (scale * 0.15f);
                 mTextPaint.setTypeface(typeface);
+
                 mTextPaint.setColor((int) mColorEvaluator.evaluate((transY / 0.15f),
                         defaultFontColor, activeFontColor));
                 drawTextCentered(getSmileName(face.smileType), face.place.x,
@@ -326,6 +329,16 @@ public class CustomSmileRating extends BaseRating {
 
     public void setTypeface(Typeface typeface) {
         this.typeface = typeface;
+        invalidate();
+    }
+
+    public void setAntiAlias(boolean mAntiAlias) {
+        this.mAntiAlias= mAntiAlias;
+        mTextPaint.setAntiAlias(mAntiAlias);
+        mPlaceholderLinePaint.setAntiAlias(mAntiAlias);
+        mPlaceHolderCirclePaint.setAntiAlias(mAntiAlias);
+        mPlaceHolderFacePaint.setAntiAlias(mAntiAlias);
+        mBackgroundPaint.setAntiAlias(mAntiAlias);
         invalidate();
     }
 
